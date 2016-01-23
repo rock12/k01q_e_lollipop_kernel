@@ -205,8 +205,10 @@ extern LCM_DRIVER r69338_hd720_dsi_vdo_jdi_dw8755a_drv;
 extern LCM_DRIVER otm9605a_qhd_dsi_vdo_drv;
 extern LCM_DRIVER ili9806e_dsi_vdo_fwvga_drv;
 extern LCM_DRIVER otm1906a_fhd_dsi_cmd_auto_lcm_drv;
+extern LCM_DRIVER ili9881_hd720_dsi_vdo_lcm_drv;
 
-LCM_DRIVER* lcm_driver_list[] = 
+
+LCM_DRIVER* lcm_driver_list[] =
 {
 #if defined(OTM1284A_HD720_DSI_VDO_TM)
 	&otm1284a_hd720_dsi_vdo_tm_lcm_drv,
@@ -930,6 +932,10 @@ LCM_DRIVER* lcm_driver_list[] =
 
 #if defined(OTM9605A_QHD_DSI_VDO)
 	&otm9605a_qhd_dsi_vdo_drv,
+#endif
+
+#if defined(ILI9881_HD720_DSI_VDO)
+        &ili9881_hd720_dsi_vdo_lcm_drv,
 #endif
 
 #if defined(OTM1906A_FHD_DSI_CMD_AUTO)
