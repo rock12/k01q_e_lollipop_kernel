@@ -14,10 +14,6 @@
 #include "DW9714AF.h"
 #include "../camera/kd_camera_hw.h"
 #include <linux/xlog.h>
-#ifdef CONFIG_COMPAT
-#include <linux/compat.h>
-#endif
-
 
 // in K2, main=3, sub=main2=1
 #define LENS_I2C_BUSNUM 3
@@ -77,10 +73,10 @@ static int s4AF_WriteReg(u16 a_u2Data)
 {
     int  i4RetValue = 0;
 
-    char puSendCmd[2] = {(char)(a_u2Data >> 4) , (char)((a_u2Data & 0xF) << 4)};
+    char puSendCmd[2] = {(char)(a_u2Data >> 4) , (char)(((a_u2Data & 0xF) << 4)+g_sr)};
 
     //LOG_INF("g_sr %d, write %d \n", g_sr, a_u2Data);
-    //g_pstAF_I2Cclient->ext_flag |= I2C_A_FILTER_MSG;
+    g_pstAF_I2Cclient->ext_flag |= I2C_A_FILTER_MSG;
     i4RetValue = i2c_master_send(g_pstAF_I2Cclient, puSendCmd, 2);
 
     if (i4RetValue < 0)
@@ -340,10 +336,7 @@ static const struct file_operations g_stAF_fops =
     .owner = THIS_MODULE,
     .open = AF_Open,
     .release = AF_Release,
-    .unlocked_ioctl = AF_Ioctl,
-#ifdef CONFIG_COMPAT
-    .compat_ioctl = AF_Ioctl,
-#endif
+    .unlocked_ioctl = AF_Ioctl
 };
 
 inline static int Register_AF_CharDrv(void)

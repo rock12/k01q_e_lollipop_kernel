@@ -1026,6 +1026,10 @@ config MTK_AUDIO_EXTCODEC_SUPPORT
 	  If you say Y, enable MTK_AUDIO_EXTCODEC_SUPPORT driver.
 
 # ALSPS sensor
+config MTK_AP3XX6
+	bool "AP3XX6 for MediaTek package"
+	default y
+
 config MTK_CM36283
 	bool "CM36283 for MediaTek package"
 	default n

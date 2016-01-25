@@ -11,11 +11,11 @@
 //Structures
 typedef struct {
 //current position
-u32 u4CurrentPosition;
+unsigned long u4CurrentPosition;
 //macro position
-u32 u4MacroPosition;
+unsigned long u4MacroPosition;
 //Infiniti position
-u32 u4InfPosition;
+unsigned long u4InfPosition;
 //Motor Status
 bool          bIsMotorMoving;
 //Motor Open?
@@ -33,10 +33,11 @@ bool          bIsSupportSR;
 //H means "switch T and Q atomically"
 #define BU64745GWZAFIOC_G_MOTORINFO _IOR(BU64745GWZAF_MAGIC,0,stBU64745GWZAF_MotorInfo)
 
-#define BU64745GWZAFIOC_T_MOVETO _IOW(BU64745GWZAF_MAGIC,1,u32)
+#define BU64745GWZAFIOC_T_MOVETO _IOW(BU64745GWZAF_MAGIC,1,unsigned long)
 
-#define BU64745GWZAFIOC_T_SETINFPOS _IOW(BU64745GWZAF_MAGIC,2,u32)
-#define BU64745GWZAFIOC_T_SETMACROPOS _IOW(BU64745GWZAF_MAGIC,3,u32)
+#define BU64745GWZAFIOC_T_SETINFPOS _IOW(BU64745GWZAF_MAGIC,2,unsigned long)
+
+#define BU64745GWZAFIOC_T_SETMACROPOS _IOW(BU64745GWZAF_MAGIC,3,unsigned long)
 
 typedef        short int                    CL_BOOL;
 

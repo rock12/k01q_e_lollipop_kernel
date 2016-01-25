@@ -14,16 +14,13 @@
 #include "FM50AF.h"
 #include "../camera/kd_camera_hw.h"
 #include <linux/xlog.h>
-#ifdef CONFIG_COMPAT
-#include <linux/compat.h>
-#endif
 
 // in K2, main=3, sub=main2=1
 #define LENS_I2C_BUSNUM 3
 
 #define AF_DRVNAME "FM50AF"
 #define I2C_SLAVE_ADDRESS        0x18
-#define I2C_REGISTER_ID            0x18
+#define I2C_REGISTER_ID            0x20
 #define PLATFORM_DRIVER_NAME "lens_actuator_fm50af"
 #define AF_DRIVER_CLASS_NAME "actuatordrv_fm50af"
 
@@ -280,7 +277,6 @@ unsigned long a_u4Param)
     return i4RetValue;
 }
 
-
 //Main jobs:
 // 1.check for device-specified errors, device not ready.
 // 2.Initialize the device if it is opened for the first time.
@@ -340,10 +336,7 @@ static const struct file_operations g_stAF_fops =
     .owner = THIS_MODULE,
     .open = AF_Open,
     .release = AF_Release,
-    .unlocked_ioctl = AF_Ioctl,
-#ifdef CONFIG_COMPAT
-    .compat_ioctl = AF_Ioctl,
-#endif
+    .unlocked_ioctl = AF_Ioctl
 };
 
 inline static int Register_AF_CharDrv(void)

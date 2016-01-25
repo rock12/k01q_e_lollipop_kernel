@@ -117,6 +117,7 @@ typedef struct imgsensor_info_struct {
 //#define IMGSENSOR_WRITE_ID_2 (0x20)
 //#define IMGSENSOR_READ_ID_2  (0x21)
 
+// add by yfx
 #define GC2355_VALID_IXEL_NUMS            800
 #define GC2355_VALID_LINE_NUMS            1200
 #define GC2355_DEFAULT_DUMMY_PIXEL_NUMS   0x11c //244 
@@ -125,13 +126,13 @@ typedef struct imgsensor_info_struct {
 #define GC2355_INTERNAL_DUMMY_PIXEL_NUMS  36
 #define GC2355_INTERNAL_DUMMY_LINE_NUMS   32
 
-#define GC2355_VIDEO_PERIOD_PIXEL_NUMS          (1120)
-#define GC2355_VIDEO_PERIOD_LINE_NUMS           (1246)
-#define GC2355_PV_PERIOD_PIXEL_NUMS            (1120)
-#define GC2355_PV_PERIOD_LINE_NUMS             (1246)
+#define GC2355_VIDEO_PERIOD_PIXEL_NUMS          (1680)
+#define GC2355_VIDEO_PERIOD_LINE_NUMS           (1250)
+#define GC2355_PV_PERIOD_PIXEL_NUMS            (1680)
+#define GC2355_PV_PERIOD_LINE_NUMS             (1250)
 
-#define GC2355_FULL_PERIOD_PIXEL_NUMS          (1120)
-#define GC2355_FULL_PERIOD_LINE_NUMS           (1246)
+#define GC2355_FULL_PERIOD_PIXEL_NUMS          (1680)
+#define GC2355_FULL_PERIOD_LINE_NUMS           (1250)
 
 
 // end

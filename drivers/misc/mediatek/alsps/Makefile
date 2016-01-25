@@ -45,3 +45,6 @@ endif
 ifeq ($(CONFIG_MTK_STK3X1X_NEW),y)
 obj-y	+=  stk3x1x-new/
 endif
+ifeq ($(CONFIG_MTK_AP3XX6),y)
+obj-y	+=  ap3xx6_mtk/
+endif
