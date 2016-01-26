@@ -117,7 +117,6 @@ typedef struct imgsensor_info_struct {
 //#define IMGSENSOR_WRITE_ID_2 (0x20)
 //#define IMGSENSOR_READ_ID_2  (0x21)
 
-// add by yfx
 #define GC2355_VALID_IXEL_NUMS            800
 #define GC2355_VALID_LINE_NUMS            1200
 #define GC2355_DEFAULT_DUMMY_PIXEL_NUMS   0x11c //244 

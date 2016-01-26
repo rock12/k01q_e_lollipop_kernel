@@ -37,7 +37,6 @@
 #include "gc2355mipi_Sensor.h"
 
 #define GC2355MIPI_2Lane   //   for  mipi lane num
-
 /****************************Modify Following Strings for Debug****************************/
 #define PFX "GC2355_camera_sensor"
 #define LOG_1 LOG_INF("GC2355,MIPI 2LANE\n")
@@ -101,7 +100,7 @@ static imgsensor_info_struct imgsensor_info = {
         .max_framerate = 300,
     },
     .hs_video = {
-          .pclk = 42000000,
+        .pclk = 42000000,
         .linelength = 1680,
         .framelength = 1250,
         .startx = 0,
@@ -123,8 +122,8 @@ static imgsensor_info_struct imgsensor_info = {
         .max_framerate = 300,
     },
     .margin = 0,            //sensor framelength & shutter margin
-    .min_shutter = 12,        //min shutter
-    .max_frame_length = 0x7fff,//max framelength by sensor register's limitation
+    .min_shutter = 7,        //min shutter
+    .max_frame_length = 0x3fff,//max framelength by sensor register's limitation
     .ae_shut_delay_frame = 0,    //shutter delay frame for AE cycle, 2 frame with ispGain_delay-shut_delay=2-0=2
     .ae_sensor_gain_delay_frame = 0,//sensor gain delay frame for AE cycle,2 frame with ispGain_delay-sensor_gain_delay=2-0=2
     .ae_ispGain_delay_frame = 2,//isp gain delay frame for AE cycle
@@ -209,7 +208,6 @@ static void set_dummy()
 	kal_uint32 vb = 0;	
 	LOG_INF("dummyline = %d, dummypixels = %d \n", imgsensor.dummy_line, imgsensor.dummy_pixel);
 
-//  modify by yfx
 	hb = imgsensor.dummy_pixel + GC2355_DEFAULT_DUMMY_PIXEL_NUMS;
 	vb = imgsensor.dummy_line + GC2355_DEFAULT_DUMMY_LINE_NUMS;
 
@@ -277,7 +275,6 @@ static void set_max_framerate(UINT16 framerate,kal_bool min_framelength_en)
 * GLOBALS AFFECTED
 *
 *************************************************************************/
-extern int camera_custfunc_flag;
 static void set_shutter(kal_uint16 shutter)
 {
     unsigned long flags;
@@ -287,16 +284,7 @@ static void set_shutter(kal_uint16 shutter)
     imgsensor.shutter = shutter;
     spin_unlock_irqrestore(&imgsensor_drv_lock, flags);
 
-//	LOG_INF("yfx, shutter = %d\n", shutter);
-/*
-	if(camera_custfunc_flag == 1)
-	{
-		if(shutter < 300)
-			shutter = 500;
-		LOG_INF("because of VT, shutter = %d\n", shutter);
 
-	}
-	*/
     //write_shutter(shutter);
     /* 0x3500, 0x3501, 0x3502 will increase VBLANK to get exposure larger than frame exposure */
     /* AE doesn't update sensor gain at capture mode, thus extra exposure lines must be updated here. */
@@ -316,12 +304,11 @@ static void set_shutter(kal_uint16 shutter)
 
 	// Update Shutter
 	if(shutter > 16383) shutter = 16383;
-	if(shutter < 12) shutter = 12;
+	if(shutter < 7) shutter = 7;
 	write_cmos_sensor(0x03, (shutter>>8) & 0x3F);
 	write_cmos_sensor(0x04, shutter & 0xFF);
 
-// del by yfx for test
-//    LOG_INF("Exit! shutter =%d, framelength =%d\n", shutter,imgsensor.frame_length);
+    LOG_INF("Exit! shutter =%d, framelength =%d\n", shutter,imgsensor.frame_length);
 
 }    /*    set_shutter */
 
@@ -363,9 +350,6 @@ static kal_uint16 set_gain(kal_uint16 gain)
 #define ANALOG_GAIN_7 470  // 7.15x
 			
 	kal_uint16 iReg,temp,temp1; 	
-
-	write_cmos_sensor(0xb1, 0x01);
-	write_cmos_sensor(0xb2, 0x00);
 	
 	iReg = gain;
 	
@@ -427,7 +411,7 @@ static void ihdr_write_shutter_gain(kal_uint16 le, kal_uint16 se, kal_uint16 gai
     LOG_INF("le:0x%x, se:0x%x, gain:0x%x\n",le,se,gain);
     if (imgsensor.ihdr_en) {
        
-    }
+}
 
 }
 
@@ -489,7 +473,7 @@ static void sensor_init(void)
 {
 	LOG_INF("E");
 	/* SYS */
-	/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
 	//////////////////////	 SYS   //////////////////////
 	/////////////////////////////////////////////////////
 	write_cmos_sensor(0xfe,0x80);
@@ -523,7 +507,7 @@ static void sensor_init(void)
 	write_cmos_sensor(0x0e,0xc0);
 	write_cmos_sensor(0x0f,0x06);
 	write_cmos_sensor(0x10,0x50);
-	write_cmos_sensor(0x17,0x14);
+	write_cmos_sensor(0x17,0x17);
 	write_cmos_sensor(0x19,0x0b);
 	write_cmos_sensor(0x1b,0x48);
 	write_cmos_sensor(0x1c,0x12);
@@ -537,7 +521,7 @@ static void sensor_init(void)
 	write_cmos_sensor(0x24,0x19);
 	write_cmos_sensor(0x27,0x20);
 	write_cmos_sensor(0x28,0x00);
-	write_cmos_sensor(0x2b,0x80);//81
+	write_cmos_sensor(0x2b,0x80);// 0x81 20140926
 	write_cmos_sensor(0x2c,0x38);
 	write_cmos_sensor(0x2e,0x16);
 	write_cmos_sensor(0x2f,0x14);
@@ -554,14 +538,12 @@ static void sensor_init(void)
 	/////////////////////////////////////////////////////
 	write_cmos_sensor(0xfe, 0x03);
 #if defined(GC2355MIPI_2Lane)
-	write_cmos_sensor(0x10, 0x81);
 	write_cmos_sensor(0x01, 0x87);
 	write_cmos_sensor(0x22, 0x03);  
 	write_cmos_sensor(0x23, 0x20);
 	write_cmos_sensor(0x25, 0x10);
 	write_cmos_sensor(0x29, 0x02);
 #else
-	write_cmos_sensor(0x10, 0x80);
 	write_cmos_sensor(0x01, 0x83);
 	write_cmos_sensor(0x22, 0x05);  
 	write_cmos_sensor(0x23, 0x30);
@@ -605,8 +587,8 @@ static void sensor_init(void)
 	/////////////////////////////////////////////////////
 	//////////////////////   crop   /////////////////////
 	/////////////////////////////////////////////////////
-	write_cmos_sensor(0x92,0x03);
-	write_cmos_sensor(0x94,0x01);
+	write_cmos_sensor(0x92,0x02);
+	write_cmos_sensor(0x94,0x00);
 	write_cmos_sensor(0x95,0x04);
 	write_cmos_sensor(0x96,0xb0);
 	write_cmos_sensor(0x97,0x06);
@@ -664,6 +646,7 @@ static void sensor_init(void)
 static void preview_setting(void)
 {
 	LOG_INF("E!\n");
+
   //MIPI//
   write_cmos_sensor(0xfe,0x03);
  #if defined(GC2355MIPI_2Lane)
@@ -678,27 +661,27 @@ static void preview_setting(void)
 static void capture_setting(kal_uint16 currefps)
 {
 	LOG_INF("E! currefps:%d\n",currefps);
-	
+		  //MIPI//
 		  write_cmos_sensor(0xfe,0x03);
  #if defined(GC2355MIPI_2Lane)
 	write_cmos_sensor(0x10, 0x91);
 #else
 	write_cmos_sensor(0x10, 0x90);
 #endif
-  write_cmos_sensor(0xfe,0x00);	
-	}
-		
+		  write_cmos_sensor(0xfe,0x00);
+}
+
 
 static void normal_video_setting(kal_uint16 currefps)
 {
 	LOG_INF("E! currefps:%d\n",currefps);
-  write_cmos_sensor(0xfe,0x03);
+	 write_cmos_sensor(0xfe,0x03);
  #if defined(GC2355MIPI_2Lane)
 	write_cmos_sensor(0x10, 0x91);
 #else
 	write_cmos_sensor(0x10, 0x90);
 #endif
-  write_cmos_sensor(0xfe,0x00);	
+	 write_cmos_sensor(0xfe,0x00);
 		
 }
 
@@ -706,13 +689,13 @@ static void hs_video_setting()
 {
     LOG_INF("E\n");
 	
-  write_cmos_sensor(0xfe,0x03);
+	write_cmos_sensor(0xfe,0x03);
  #if defined(GC2355MIPI_2Lane)
 	write_cmos_sensor(0x10, 0x91);
 #else
 	write_cmos_sensor(0x10, 0x90);
 #endif
-  write_cmos_sensor(0xfe,0x00);	
+	write_cmos_sensor(0xfe,0x00);
 
 }
 
@@ -720,13 +703,13 @@ static void slim_video_setting()
 {
     LOG_INF("E\n");
 	
-  write_cmos_sensor(0xfe,0x03);
+	write_cmos_sensor(0xfe,0x03);
  #if defined(GC2355MIPI_2Lane)
 	write_cmos_sensor(0x10, 0x91);
 #else
 	write_cmos_sensor(0x10, 0x90);
 #endif
-  write_cmos_sensor(0xfe,0x00);	
+	write_cmos_sensor(0xfe,0x00);
 }
 
 static kal_uint32 set_test_pattern_mode(kal_bool enable)
@@ -768,6 +751,7 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 {
     kal_uint8 i = 0;
     kal_uint8 retry = 2;
+    //sensor have two i2c address 0x6c 0x6d & 0x21 0x20, we should detect the module used i2c address
     while (imgsensor_info.i2c_addr_table[i] != 0xff) {
         spin_lock(&imgsensor_drv_lock);
         imgsensor.i2c_write_id = imgsensor_info.i2c_addr_table[i];
@@ -1334,6 +1318,8 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
     UINT16 *feature_data_16=(UINT16 *) feature_para;
     UINT32 *feature_return_para_32=(UINT32 *) feature_para;
     UINT32 *feature_data_32=(UINT32 *) feature_para;
+    unsigned long long *feature_data=(unsigned long long *) feature_para;
+    unsigned long long *feature_return_para=(unsigned long long *) feature_para;
 
     SENSOR_WINSIZE_INFO_STRUCT *wininfo;
     MSDK_SENSOR_REG_INFO_STRUCT *sensor_reg_data=(MSDK_SENSOR_REG_INFO_STRUCT *) feature_para;
@@ -1350,13 +1336,13 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
             *feature_para_len=4;
             break;
         case SENSOR_FEATURE_SET_ESHUTTER:
-            set_shutter(*feature_data_16);
+            set_shutter(*feature_data);
             break;
         case SENSOR_FEATURE_SET_NIGHTMODE:
-            night_mode((BOOL) *feature_data_16);
+            night_mode((BOOL) *feature_data);
             break;
         case SENSOR_FEATURE_SET_GAIN:
-            set_gain((UINT16) *feature_data_16);
+            set_gain((UINT16) *feature_data);
             break;
         case SENSOR_FEATURE_SET_FLASHLIGHT:
             break;
@@ -1375,7 +1361,7 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
             *feature_para_len=4;
             break;
         case SENSOR_FEATURE_SET_VIDEO_MODE:
-            set_video_mode(*feature_data_16);
+            set_video_mode(*feature_data);
             break;
         case SENSOR_FEATURE_CHECK_SENSOR_ID:
             get_imgsensor_id(feature_return_para_32);
@@ -1384,33 +1370,34 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
             set_auto_flicker_mode((BOOL)*feature_data_16,*(feature_data_16+1));
             break;
         case SENSOR_FEATURE_SET_MAX_FRAME_RATE_BY_SCENARIO:
-            set_max_framerate_by_scenario((MSDK_SCENARIO_ID_ENUM)*feature_data_32, *(feature_data_32+1));
+            set_max_framerate_by_scenario((MSDK_SCENARIO_ID_ENUM)*feature_data, *(feature_data+1));
             break;
         case SENSOR_FEATURE_GET_DEFAULT_FRAME_RATE_BY_SCENARIO:
-            get_default_framerate_by_scenario((MSDK_SCENARIO_ID_ENUM)*feature_data_32, (MUINT32 *)(*(feature_data_32+1)));
+            get_default_framerate_by_scenario((MSDK_SCENARIO_ID_ENUM)*(feature_data), (MUINT32 *)(uintptr_t)(*(feature_data+1)));
             break;
         case SENSOR_FEATURE_SET_TEST_PATTERN:
-            set_test_pattern_mode((BOOL)*feature_data_16);
+            set_test_pattern_mode((BOOL)*feature_data);
             break;
         case SENSOR_FEATURE_GET_TEST_PATTERN_CHECKSUM_VALUE: //for factory mode auto testing
             *feature_return_para_32 = imgsensor_info.checksum_value;
             *feature_para_len=4;
             break;
         case SENSOR_FEATURE_SET_FRAMERATE:
-            LOG_INF("current fps :%d\n", *feature_data_16);
+            LOG_INF("current fps :%d\n", (UINT32)*feature_data);
             spin_lock(&imgsensor_drv_lock);
-            imgsensor.current_fps = *feature_data_16;
+            imgsensor.current_fps = *feature_data;
             spin_unlock(&imgsensor_drv_lock);
             break;
         case SENSOR_FEATURE_SET_HDR:
-            LOG_INF("ihdr enable :%d\n", *feature_data_16);
+            LOG_INF("ihdr enable :%d\n", (BOOL)*feature_data);
             spin_lock(&imgsensor_drv_lock);
-            imgsensor.ihdr_en = *feature_data_16;
+            imgsensor.ihdr_en = (BOOL)*feature_data;
             spin_unlock(&imgsensor_drv_lock);
             break;
         case SENSOR_FEATURE_GET_CROP_INFO:
-            LOG_INF("SENSOR_FEATURE_GET_CROP_INFO scenarioId:%d\n", *feature_data_32);
-            wininfo = (SENSOR_WINSIZE_INFO_STRUCT *)(*(feature_data_32+1));
+            LOG_INF("SENSOR_FEATURE_GET_CROP_INFO scenarioId:%d\n", (UINT32)*feature_data);
+
+            wininfo = (SENSOR_WINSIZE_INFO_STRUCT *)(uintptr_t)(*(feature_data+1));
 
             switch (*feature_data_32) {
                 case MSDK_SCENARIO_ID_CAMERA_CAPTURE_JPEG:
@@ -1430,10 +1417,9 @@ static kal_uint32 feature_control(MSDK_SENSOR_FEATURE_ENUM feature_id,
                     memcpy((void *)wininfo,(void *)&imgsensor_winsize_info[0],sizeof(SENSOR_WINSIZE_INFO_STRUCT));
                     break;
             }
-            break;
         case SENSOR_FEATURE_SET_IHDR_SHUTTER_GAIN:
-            LOG_INF("SENSOR_SET_SENSOR_IHDR LE=%d, SE=%d, Gain=%d\n",*feature_data_32,*(feature_data_32+1),*(feature_data_32+2));
-            ihdr_write_shutter_gain(*feature_data_32,*(feature_data_32+1),*(feature_data_32+2));
+            LOG_INF("SENSOR_SET_SENSOR_IHDR LE=%d, SE=%d, Gain=%d\n",(UINT16)*feature_data,(UINT16)*(feature_data+1),(UINT16)*(feature_data+2));
+            ihdr_write_shutter_gain((UINT16)*feature_data,(UINT16)*(feature_data+1),(UINT16)*(feature_data+2));
             break;
         default:
             break;

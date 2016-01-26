@@ -126,12 +126,12 @@ typedef struct imgsensor_info_struct {
 #define GC2235_INTERNAL_DUMMY_PIXEL_NUMS  36
 #define GC2235_INTERNAL_DUMMY_LINE_NUMS   32
 
-#define GC2235_VIDEO_PERIOD_PIXEL_NUMS          (1107) //1107
+#define GC2235_VIDEO_PERIOD_PIXEL_NUMS          (1107)
 #define GC2235_VIDEO_PERIOD_LINE_NUMS           (1387)
-#define GC2235_PV_PERIOD_PIXEL_NUMS            (1107)//1107
+#define GC2235_PV_PERIOD_PIXEL_NUMS            (1107)
 #define GC2235_PV_PERIOD_LINE_NUMS             (1387)
 
-#define GC2235_FULL_PERIOD_PIXEL_NUMS          (1107)//1107
+#define GC2235_FULL_PERIOD_PIXEL_NUMS          (1107)
 #define GC2235_FULL_PERIOD_LINE_NUMS           (1387)
 
 

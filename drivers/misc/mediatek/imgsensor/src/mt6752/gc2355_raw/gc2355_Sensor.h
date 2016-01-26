@@ -2,7 +2,7 @@
  *
  * Filename:
  * ---------
- *     OV5693mipi_Sensor.h
+ *     GC2355_Sensor.h
  *
  * Project:
  * --------
@@ -13,8 +13,8 @@
  *     CMOS sensor header file
  *
  ****************************************************************************/
-#ifndef _GC2235_SENSOR_H
-#define _GC2235_SENSOR_H
+#ifndef _GC2355_SENSOR_H
+#define _GC2355_SENSOR_H
 
 
 typedef enum{
@@ -37,8 +37,8 @@ typedef struct imgsensor_mode_struct {
     kal_uint16 grabwindow_width;    //record different mode's width of grabwindow
     kal_uint16 grabwindow_height;    //record different mode's height of grabwindow
 
-    /*     following for MIPIDataLowPwr2HighSpeedSettleDelayCount by different scenario    */
-    kal_uint8 mipi_data_lp2hs_settle_dc;
+    /*     following for DataLowPwr2HighSpeedSettleDelayCount by different scenario    */
+    //kal_uint8 mipi_data_lp2hs_settle_dc;
 
     /*     following for GetDefaultFramerateByScenario()    */
     kal_uint16 max_framerate;
@@ -85,7 +85,7 @@ typedef struct imgsensor_info_struct {
 
     kal_uint8  ae_shut_delay_frame;    //shutter delay frame for AE cycle
     kal_uint8  ae_sensor_gain_delay_frame;    //sensor gain delay frame for AE cycle
-    kal_uint8  ae_isp_gain_delay_frame;    //isp gain delay frame for AE cycle
+    kal_uint8  ae_ispGain_delay_frame;    //isp gain delay frame for AE cycle
     kal_uint8  ihdr_support;        //1, support; 0,not support
     kal_uint8  ihdr_le_firstline;    //1,le first ; 0, se first
     kal_uint8  sensor_mode_num;        //support sensor mode num
@@ -102,14 +102,13 @@ typedef struct imgsensor_info_struct {
 
     kal_uint8  isp_driving_current;    //mclk driving current
     kal_uint8  sensor_interface_type;//sensor_interface_type
-    kal_uint8  mipi_sensor_type; //0,MIPI_OPHY_NCSI2; 1,MIPI_OPHY_CSI2, default is NCSI2, don't modify this para
-    kal_uint8  mipi_settle_delay_mode; //0, high speed signal auto detect; 1, use settle delay,unit is ns, default is auto detect, don't modify this para
+   // kal_uint8  mipi_sensor_type; //0,MIPI_OPHY_NCSI2; 1,MIPI_OPHY_CSI2, default is NCSI2, don't modify this para
+   // kal_uint8  mipi_settle_delay_mode; //0, high speed signal auto detect; 1, use settle delay,unit is ns, default is auto detect, don't modify this para
     kal_uint8  sensor_output_dataformat;//sensor output first pixel color
     kal_uint8  mclk;                //mclk value, suggest 24 or 26 for 24Mhz or 26Mhz
 
-    kal_uint8  mipi_lane_num;        //mipi lane num
+    //kal_uint8  mipi_lane_num;        //mipi lane num
     kal_uint8  i2c_addr_table[5];    //record sensor support all write id addr, only supprt 4must end with 0xff
-    kal_uint32  i2c_speed;     //i2c speed
 } imgsensor_info_struct;
 
 /* SENSOR READ/WRITE ID */
@@ -118,8 +117,27 @@ typedef struct imgsensor_info_struct {
 //#define IMGSENSOR_WRITE_ID_2 (0x20)
 //#define IMGSENSOR_READ_ID_2  (0x21)
 
+#define GC2355_VALID_IXEL_NUMS            800
+#define GC2355_VALID_LINE_NUMS            1200
+#define GC2355_DEFAULT_DUMMY_PIXEL_NUMS   0x11c //244 
+#define GC2355_DEFAULT_DUMMY_LINE_NUMS    0x0e //64
+
+#define GC2355_INTERNAL_DUMMY_PIXEL_NUMS  36
+#define GC2355_INTERNAL_DUMMY_LINE_NUMS   32
+
+#define GC2355_VIDEO_PERIOD_PIXEL_NUMS          (1680)
+#define GC2355_VIDEO_PERIOD_LINE_NUMS           (1250)
+#define GC2355_PV_PERIOD_PIXEL_NUMS            (1680)
+#define GC2355_PV_PERIOD_LINE_NUMS             (1250)
+
+#define GC2355_FULL_PERIOD_PIXEL_NUMS          (1680)
+#define GC2355_FULL_PERIOD_LINE_NUMS           (1250)
+
+
+// end
+
 extern int iReadRegI2C(u8 *a_pSendData , u16 a_sizeSendData, u8 * a_pRecvData, u16 a_sizeRecvData, u16 i2cId);
 extern int iWriteRegI2C(u8 *a_pSendData , u16 a_sizeSendData, u16 i2cId);
-extern void kdSetI2CSpeed(u16 i2cSpeed);
+extern int iWriteReg(u16 a_u2Addr , u32 a_u4Data , u32 a_u4Bytes , u16 i2cId); 
 
 #endif
