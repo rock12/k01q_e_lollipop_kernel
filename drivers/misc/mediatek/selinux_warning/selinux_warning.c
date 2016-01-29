@@ -20,7 +20,7 @@
 #endif
 
 #define SELINUX_WARNING_C
-#include "mtk_selinux_warning_list.h"	 /* locate at custom/kernel/seplolicy */
+#include "mtk_selinux_warning_list.h"	/* locate at custom/kernel/seplolicy */
 #undef SELINUX_WARNING_C
 
 #define AEE_FILTER_LEN 50
@@ -61,7 +61,7 @@ static int mtk_get_scontext(char *data, char *buf)
 	char *t2;
 	int diff = 0;
 
-	t1 = strstr(data, "scontext");
+	t1 = strstr(data, "scontext=");
 
 	if (t1 == NULL)
 		return 0;
@@ -101,30 +101,33 @@ static char *mtk_get_process(char *in)
 	return out;
 }
 
-void mtk_audit_hook(char *scontext)
+void mtk_audit_hook(char *data)
 {
+	char scontext[AEE_FILTER_LEN] = { '\0' };
+	char *pname = scontext;
 	char printBuf[AEE_FILTER_LEN] = { '\0' };
+
 
 	int ret = 0;
 
 	/*get scontext from avc warning */
-	/*
 	ret = mtk_get_scontext(data, scontext);
 	if (!ret)
 		return;
-	*/
 	/*check scontext is in warning list */
 	ret = mtk_check_filter(scontext);
 	if (ret >= 0) {
-			sprintf(printBuf, "SELinux Warning, scontext = %s ", scontext);
+		pname = mtk_get_process(scontext);
+		if (pname != 0) {
+			pr_warn("[selinux]Enforce: %d, In AEE Warning List scontext: %s\n",
+				selinux_enforcing, pname);
+			sprintf(printBuf, "Selinux Enforce violation: %s ", pname);
 #ifdef CONFIG_MTK_AEE_FEATURE
-			if (selinux_enforcing){
-			/*
-				aee_kernel_warning_api(__FILE__, __LINE__, DB_OPT_DEFAULT|DB_OPT_NATIVE_BACKTRACE, 
-					printBuf, printBuf);
-			*/			
-		    }
+			if (selinux_enforcing)
+				aee_kernel_warning(printBuf, "\nCR_DISPATCH_PROCESSNAME:%s\n%s",
+						   pname, data);
 #endif
 		}
 	}
+}
 EXPORT_SYMBOL(mtk_audit_hook);

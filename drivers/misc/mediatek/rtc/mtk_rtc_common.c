@@ -79,16 +79,6 @@
 #define RTC_MIN_YEAR_OFFSET	(RTC_MIN_YEAR - 1900)
 #define AUTOBOOT_ON 1
 #define AUTOBOOT_OFF 0
-
-
-#ifdef PMIC_REGISTER_INTERRUPT_ENABLE
-extern void pmic_register_interrupt_callback(kal_uint32 intNo,void (EINT_FUNC_PTR)(void));
-extern void pmic_enable_interrupt(kal_uint32 intNo,kal_uint32 en,char *str);
-#endif
-
-#ifdef VRTC_PWM_ENABLE
-struct timespec rtc_xts_start;
-#endif
 /*
  * RTC_PDN1:
  *     bit 0 - 3  : Android bits
@@ -634,26 +624,6 @@ static int rtc_ops_set_alarm(struct device *dev, struct rtc_wkalrm *alm)
 	return 0;
 }
 
-void rtc_pwm_enable_check(void)
-{
-#ifdef VRTC_PWM_ENABLE
-	struct timespec rtc_xts_end, tom, sleep;
-	__kernel_time_t dif_time;
-
-	rtc_xinfo("rtc_pwm_enable_check()\n");
-
-	get_xtime_and_monotonic_and_sleep_offset(&rtc_xts_end, &tom, &sleep);
-	dif_time = rtc_xts_end.tv_sec - rtc_xts_start.tv_sec;
-
-	if(dif_time > RTC_PWM_ENABLE_POLLING_TIMER)
-	{
-		hal_rtc_pwm_enable();
-	}
-
-#endif
-}
-
-
 static int rtc_ops_ioctl(struct device *dev, unsigned int cmd, unsigned long arg)
 {
 	/* dump_stack(); */
@@ -700,18 +670,6 @@ static int rtc_pdrv_probe(struct platform_device *pdev)
 		rtc_xerror("register rtc device failed (%ld)\n", PTR_ERR(rtc));
 		return PTR_ERR(rtc);
 	}
-
-	#ifdef PMIC_REGISTER_INTERRUPT_ENABLE
-		pmic_register_interrupt_callback(RTC_INTERRUPT_NUM,rtc_irq_handler);	
-		pmic_enable_interrupt(RTC_INTERRUPT_NUM,1,"RTC");
-	#endif
-
-	#ifdef VRTC_PWM_ENABLE
-	{
-		struct timespec tom, sleep;
-		get_xtime_and_monotonic_and_sleep_offset(&rtc_xts_start, &tom, &sleep);
-	}
-	#endif
 
 	device_init_wakeup(&pdev->dev, 1);
 	return 0;

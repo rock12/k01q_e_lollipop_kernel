@@ -137,6 +137,7 @@ extern LCM_DRIVER nt35595_fhd_dsi_cmd_truly_tps65132_720p_lcm_drv;
 extern LCM_DRIVER nt35596_fhd_dsi_vdo_yassy_lcm_drv;
 extern LCM_DRIVER nt35596_hd720_dsi_vdo_truly_tps65132_lcm_drv;
 extern LCM_DRIVER nt35590_hd720_dsi_cmd_truly2_lcm_drv;
+extern LCM_DRIVER otm9605a_qhd_dsi_vdo_lcm_drv;
 extern LCM_DRIVER otm9608_wvga_dsi_cmd_drv;
 extern LCM_DRIVER otm9608_qhd_dsi_cmd_drv;
 extern LCM_DRIVER nt35510_dbi_18bit_gionee_lcm_drv;
@@ -202,7 +203,7 @@ extern LCM_DRIVER r63419_fhd_truly_phantom_lcm_drv;
 extern LCM_DRIVER r63423_wqhd_truly_phantom_lcm_drv;
 extern LCM_DRIVER kr101ia2s_dsi_vdo_lcm_drv;
 extern LCM_DRIVER r69338_hd720_dsi_vdo_jdi_dw8755a_drv;
-extern LCM_DRIVER otm9605a_qhd_dsi_vdo_drv;
+//extern LCM_DRIVER otm9605a_qhd_dsi_vdo_drv;
 extern LCM_DRIVER ili9806e_dsi_vdo_fwvga_drv;
 extern LCM_DRIVER otm1906a_fhd_dsi_cmd_auto_lcm_drv;
 extern LCM_DRIVER ili9881_hd720_dsi_vdo_lcm_drv;
@@ -739,6 +740,10 @@ LCM_DRIVER* lcm_driver_list[] =
     &auo_b079xat02_dsi_vdo_lcm_drv,
 #endif
 
+#if defined(OTM9605A_QHD_DSI_VDO)
+	&otm9605a_qhd_dsi_vdo_lcm_drv,
+#endif
+
 #if defined(OTM9608_WVGA_DSI_CMD)
 	&otm9608_wvga_dsi_cmd_drv,
 #endif
@@ -930,9 +935,9 @@ LCM_DRIVER* lcm_driver_list[] =
     &r63423_wqhd_truly_phantom_lcm_drv,
 #endif
 
-#if defined(OTM9605A_QHD_DSI_VDO)
-	&otm9605a_qhd_dsi_vdo_drv,
-#endif
+//#if defined(OTM9605A_QHD_DSI_VDO)
+//	&otm9605a_qhd_dsi_vdo_drv,
+//#endif
 
 #if defined(ILI9881_HD720_DSI_VDO)
         &ili9881_hd720_dsi_vdo_lcm_drv,

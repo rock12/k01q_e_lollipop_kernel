@@ -99,6 +99,9 @@
 /* CAMERA DRIVER NAME */
 #define CAMERA_HW_DEVNAME                 "kd_camera_hw"
 /* SENSOR DEVICE DRIVER NAME */
+/*IMX*/
+#define IMX219_SENSOR_ID              0x0219//0x0119//
+#define SENSOR_DRVNAME_IMX219_MIPI_RAW    "imx219mipiraw"
 /*OV*/
 #define OV13850_SENSOR_ID			  0xD850
 #define SENSOR_DRVNAME_OV13850_MIPI_RAW   "ov13850mipiraw"
@@ -117,9 +120,7 @@
 #define SENSOR_DRVNAME_GC2235_MIPI_RAW	  "gc2235_mipi_raw"
 #define GC2355_SENSOR_ID			  0x2355
 #define SENSOR_DRVNAME_GC2355_MIPI_RAW    "gc2355mipiraw"
-/*IMX*/
-#define IMX219_SENSOR_ID              0x0219//0x0119//
-#define SENSOR_DRVNAME_IMX219_MIPI_RAW    "imx219mipiraw"
+
 
 /*******************************************************************************
 *

@@ -55,6 +55,7 @@ obj-$(CONFIG_MTK_CMDQ) += cmdq/
 obj-y	+= mmp/
 obj-y	+= dispsys/
 obj-$(CONFIG_MTK_VIDEOX) += videox/
+obj-y += hwm_info.o
 
 obj-y	+= auxadc/
 
@@ -160,14 +161,14 @@ obj-$(CONFIG_MTK_EEMCS_DRIVER) +=  eemcs/
 obj-$(CONFIG_MTK_NFC) += nfc/
 obj-$(CONFIG_ZRAM)	+= mlog/
 
-#obj-y	+= cam_cal/src/$(MTK_PLATFORM)/dummy_eeprom/
-
-#obj-$(CONFIG_MTK_CAM_CAL_GT24C32A_SUPPORT)	+= cam_cal/src/$(MTK_PLATFORM)/GT24c32a_eeprom/
-#obj-$(CONFIG_MTK_CAM_CAL_BRCC064GWZ_3_SUPPORT) += cam_cal/src/$(MTK_PLATFORM)/BRCC064GWZ_3_eeprom/
-#obj-$(CONFIG_MTK_CAM_CAL_BRCB032GWZ_3_SUPPORT) += cam_cal/src/$(MTK_PLATFORM)/BRCB032GWZ_3_eeprom/
+#obj-y	+= cam_cal/src/mt6752/dummy_eeprom/
 obj-y	+= lens/
 obj-y	+= imgsensor/src/
-
+#obj-y	+= imgsensor/src/mt6752/imx219_mipi_raw
+#obj-y	+= imgsensor/src/mt6752/gc2235_mipi_raw
+#obj-y	+= imgsensor/src/mt6752/gc2355_mipi_raw
+#obj-y	+= imgsensor/src/mt6752/ov8858_mipi_raw
+#obj-y	+= imgsensor/src/mt6752/ov8858_mipi_raw_r1a
 
 ifeq ($(wildcard $(srctree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)/cam_cal),)
 obj-$(CONFIG_MTK_CAM_CAL)	+= cam_cal/src/
