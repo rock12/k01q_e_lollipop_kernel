@@ -12,6 +12,11 @@
  * GNU General Public License for more details.
  *
  */
+#ifdef pr_fmt
+#undef pr_fmt
+#endif
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+
 #include <linux/delay.h>
 #include <linux/init.h>
 #include <linux/module.h>
@@ -22,15 +27,9 @@
 #include <linux/interrupt.h>
 #include <linux/platform_device.h>
 #include <linux/delay.h>
-#include <linux/xlog.h>
 
-//#include <mach/mt6577_boot.h>
-//#include <mach/mt6577_reg_base.h>
 #include <mach/irqs.h>
 #include <mach/mtk_rtc_hal.h>
-//#include <mach/pmic_mt6320_sw.h>
-//#include <mach/upmu_common.h>
-//#include <mach/upmu_hw.h>
 #include "mach/mt_rtc_hw.h"
 #include <mach/mt_typedefs.h>
 #include <mach/mt_pmic_wrap.h>
@@ -40,17 +39,16 @@
 #endif
 #include <rtc-mt.h>		/* custom file */
 
-#define XLOG_MYTAG	"Power/RTC"
 
 
 #define hal_rtc_xinfo(fmt, args...)		\
-	xlog_printk(ANDROID_LOG_INFO, XLOG_MYTAG, fmt, ##args)
+	pr_notice(fmt, ##args)
 
 #define hal_rtc_xerror(fmt, args...)	\
-	xlog_printk(ANDROID_LOG_ERROR, XLOG_MYTAG, fmt, ##args)
+	pr_err(fmt, ##args)
 
 #define hal_rtc_xfatal(fmt, args...)	\
-	xlog_printk(ANDROID_LOG_FATAL, XLOG_MYTAG, fmt, ##args)
+	pr_emerg(fmt, ##args)
 
 static u16 rtc_read(u16 addr)
 {
@@ -345,6 +343,11 @@ static void rtc_get_tick(struct rtc_time *tm) {
 	tm->tm_year = rtc_read(RTC_TC_YEA);
 }
 void hal_rtc_get_tick_time(struct rtc_time *tm) {
+	u16 bbpu;
+
+	bbpu = rtc_read(RTC_BBPU) | RTC_BBPU_KEY | RTC_BBPU_RELOAD;
+	rtc_write(RTC_BBPU, bbpu);
+	rtc_write_trigger();
 	rtc_get_tick(tm);
 	if (rtc_read(RTC_TC_SEC) < tm->tm_sec) {	/* SEC has carried */
 		rtc_get_tick(tm);
@@ -401,7 +404,7 @@ void hal_rtc_get_alarm_time(struct rtc_time *tm, struct rtc_wkalrm *alm) {
 	tm->tm_hour = rtc_read(RTC_AL_HOU) & RTC_AL_HOU_MASK;
 	tm->tm_mday = rtc_read(RTC_AL_DOM) & RTC_AL_DOM_MASK;
 	tm->tm_mon  = rtc_read(RTC_AL_MTH) & RTC_AL_MTH_MASK;
-	tm->tm_year = rtc_read(RTC_AL_YEA);
+	tm->tm_year = rtc_read(RTC_AL_YEA) & RTC_AL_YEA_MASK;
 	pdn2 = rtc_read(RTC_PDN2);
 	alm->enabled = !!(irqen & RTC_IRQ_EN_AL);
 	alm->pending = !!(pdn2 & RTC_PDN2_PWRON_ALARM);	/* return Power-On Alarm bit */
@@ -409,26 +412,28 @@ void hal_rtc_get_alarm_time(struct rtc_time *tm, struct rtc_wkalrm *alm) {
 
 void hal_rtc_set_alarm_time(struct rtc_time *tm) {
 	u16 irqen;
-		hal_rtc_xinfo("read tc time = %04d/%02d/%02d (%d) %02d:%02d:%02d\n",
-		          tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
-		          tm->tm_wday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-		hal_rtc_xinfo("a = %d\n",(rtc_read(RTC_AL_MTH)& (RTC_NEW_SPARE3))|tm->tm_mon);
-		hal_rtc_xinfo("b = %d\n",(rtc_read(RTC_AL_DOM)& (RTC_NEW_SPARE1))|tm->tm_mday);
-		hal_rtc_xinfo("c = %d\n",(rtc_read(RTC_AL_HOU)& (RTC_NEW_SPARE_FG_MASK))|tm->tm_hour);
-		rtc_write(RTC_AL_YEA, tm->tm_year);
-		rtc_write(RTC_AL_MTH, (rtc_read(RTC_AL_MTH) & (RTC_NEW_SPARE3))|tm->tm_mon);
-		rtc_write(RTC_AL_DOM, (rtc_read(RTC_AL_DOM) & (RTC_NEW_SPARE1))|tm->tm_mday);
-		rtc_write(RTC_AL_HOU, (rtc_read(RTC_AL_HOU) & (RTC_NEW_SPARE_FG_MASK))|tm->tm_hour);
-		rtc_write(RTC_AL_MIN, tm->tm_min);
-		rtc_write(RTC_AL_SEC, rtc_read(RTC_AL_SEC) & (~RTC_AL_SEC_MASK) | (tm->tm_sec & RTC_AL_SEC_MASK) );
-		rtc_write(RTC_AL_MASK, RTC_AL_MASK_DOW);		/* mask DOW */
-		rtc_write_trigger();
-		irqen = rtc_read(RTC_IRQ_EN) | RTC_IRQ_EN_ONESHOT_AL;
-		rtc_write(RTC_IRQ_EN, irqen);
-		rtc_write_trigger();
-	}
+	
+	hal_rtc_xinfo("read tc time = %04d/%02d/%02d (%d) %02d:%02d:%02d\n",
+		tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+		tm->tm_wday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+	hal_rtc_xinfo("a = %d\n",(rtc_read(RTC_AL_MTH)& (RTC_NEW_SPARE3))|tm->tm_mon);
+	hal_rtc_xinfo("b = %d\n",(rtc_read(RTC_AL_DOM)& (RTC_NEW_SPARE1))|tm->tm_mday);
+	hal_rtc_xinfo("c = %d\n",(rtc_read(RTC_AL_HOU)& (RTC_NEW_SPARE_FG_MASK))|tm->tm_hour);
+	rtc_write(RTC_AL_YEA, (rtc_read(RTC_AL_YEA) & ~(RTC_AL_YEA_MASK)) | (tm->tm_year & RTC_AL_YEA_MASK));
+	rtc_write(RTC_AL_MTH, (rtc_read(RTC_AL_MTH) & (RTC_NEW_SPARE3))|tm->tm_mon);
+	rtc_write(RTC_AL_DOM, (rtc_read(RTC_AL_DOM) & (RTC_NEW_SPARE1))|tm->tm_mday);
+	rtc_write(RTC_AL_HOU, (rtc_read(RTC_AL_HOU) & (RTC_NEW_SPARE_FG_MASK))|tm->tm_hour);
+	rtc_write(RTC_AL_MIN, tm->tm_min);
+	rtc_write(RTC_AL_SEC, rtc_read(RTC_AL_SEC) & (~RTC_AL_SEC_MASK) | (tm->tm_sec & RTC_AL_SEC_MASK));
+	rtc_write(RTC_AL_MASK, RTC_AL_MASK_DOW);		/* mask DOW */
+	rtc_write_trigger();
+	irqen = rtc_read(RTC_IRQ_EN) | RTC_IRQ_EN_ONESHOT_AL;
+	rtc_write(RTC_IRQ_EN, irqen);
+	rtc_write_trigger();
+}
 
-void hal_rtc_clear_alarm(void) {
+void hal_rtc_clear_alarm(struct rtc_time *tm)
+{
 	u16 irqsta, irqen, pdn2;
 	
 	irqen = rtc_read(RTC_IRQ_EN) & ~RTC_IRQ_EN_AL;
@@ -437,6 +442,13 @@ void hal_rtc_clear_alarm(void) {
 	rtc_write(RTC_PDN2, pdn2);
 	rtc_write_trigger();
 	irqsta = rtc_read(RTC_IRQ_STA);		/* read clear */
+
+	rtc_write(RTC_AL_YEA, (rtc_read(RTC_AL_YEA) & ~(RTC_AL_YEA_MASK)) | (tm->tm_year & RTC_AL_YEA_MASK));
+	rtc_write(RTC_AL_MTH, (rtc_read(RTC_AL_MTH)&0xff00)|tm->tm_mon);
+	rtc_write(RTC_AL_DOM, (rtc_read(RTC_AL_DOM)&0xff00)|tm->tm_mday);
+	rtc_write(RTC_AL_HOU, (rtc_read(RTC_AL_HOU)&0xff00)|tm->tm_hour);
+	rtc_write(RTC_AL_MIN, tm->tm_min);
+	rtc_write(RTC_AL_SEC, rtc_read(RTC_AL_SEC) & (~RTC_AL_SEC_MASK) | (tm->tm_sec & RTC_AL_SEC_MASK));
 }
 
 void hal_rtc_set_lp_irq(void) {

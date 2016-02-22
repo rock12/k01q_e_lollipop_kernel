@@ -25,7 +25,7 @@ ifneq ($(CONFIG_MTK_GIC),y)
 obj-y   += irq/
 endif
 
-#obj-$(CONFIG_MTK_CPU_STRESS)	+= cpu_stress/
+obj-$(CONFIG_MTK_CPU_STRESS)	+= cpu_stress/
 obj-$(CONFIG_MTK_LASTPC)	    += lastpc/
 obj-$(CONFIG_MTK_DBG_DUMP) += dbg_dump/
 
@@ -60,7 +60,6 @@ obj-y += hwm_info.o
 obj-y	+= auxadc/
 
 #obj-y	+= bthid/
-#obj-y	+= ccmni/
 
 ifdef CONFIG_CUSTOM_KERNEL_EXTMD
 ifneq ($(strip $(CONFIG_CUSTOM_KERNEL_EXTMD)),"")
@@ -70,10 +69,8 @@ endif
 
 obj-$(CONFIG_MTK_WFD_SUPPORT)  += uibc/
 
-ifneq ($(CONFIG_GATOR_DRIVER),)
- ifneq ($(wildcard $(srctree)/$(src)/gator-driver/),)
-  obj-$(CONFIG_GATOR_DRIVER) += gator-driver/
- endif
+ifneq ($(wildcard $(srctree)/$(src)/met/),)
+ 
 endif
 
 
@@ -145,7 +142,7 @@ endif
 endif
 #obj-y	+= matv/
 #obj-y	+= touchpanel/
-#
+# 
 
 obj-$(CONFIG_MTK_VOW_SUPPORT)	+= vow/
 
@@ -154,21 +151,20 @@ obj-$(CONFIG_MTK_COMBO)			+= connectivity/
 obj-$(CONFIG_MTK_CONN_MD)	+= conn_md/
 
 obj-y	+=  ccci_util/
+obj-$(CONFIG_MTK_NET_CCMNI) +=  ccmni/
 obj-$(CONFIG_MTK_CCCI_DRIVER)  +=  ccci/
 obj-$(CONFIG_MTK_CCCI_EXT)     +=  dual_ccci/
 obj-$(CONFIG_MTK_ECCCI_DRIVER) +=  eccci/
 obj-$(CONFIG_MTK_EEMCS_DRIVER) +=  eemcs/
+obj-$(CONFIG_MTK_IRTX) += irtx/
 obj-$(CONFIG_MTK_NFC) += nfc/
 obj-$(CONFIG_ZRAM)	+= mlog/
 
-#obj-y	+= cam_cal/src/mt6752/dummy_eeprom/
+#obj-y	+= cam_cal/src/$(MTK_PLATFORM)/dummy_eeprom/
+
 obj-y	+= lens/
 obj-y	+= imgsensor/src/
-#obj-y	+= imgsensor/src/mt6752/imx219_mipi_raw
-#obj-y	+= imgsensor/src/mt6752/gc2235_mipi_raw
-#obj-y	+= imgsensor/src/mt6752/gc2355_mipi_raw
-#obj-y	+= imgsensor/src/mt6752/ov8858_mipi_raw
-#obj-y	+= imgsensor/src/mt6752/ov8858_mipi_raw_r1a
+
 
 ifeq ($(wildcard $(srctree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)/cam_cal),)
 obj-$(CONFIG_MTK_CAM_CAL)	+= cam_cal/src/
@@ -226,9 +222,9 @@ ifneq (,$(filter $(CONFIG_MTK_PLATFORM), "mt6572" "mt6582" "mt6592" "mt6595" "mt
 obj-y	+= masp/
 endif
 obj-$(CONFIG_MTK_MMC)	+= mmc-host/
-#obj-$(CONFIG_MTK_MTD_NAND)	+= nand/
-obj-$(CONFIG_MTK_GPT_SCHEME_SUPPORT)	+= partition/
 obj-$(CONFIG_MTK_MMC)	+= pmt/
+obj-$(CONFIG_MTK_MTD_NAND)	+= nand/
+obj-$(CONFIG_MTK_GPT_SCHEME_SUPPORT)	+= partition/
 obj-$(CONFIG_MTK_SOUND) += smartpa/
 
 #charge pump
@@ -260,7 +256,7 @@ obj-y	+= selinux_warning/
 # MTK PASR SW flow
 obj-$(CONFIG_MTKPASR)	+= mtkpasr/
 
-#obj-$(CONFIG_MTK_TC1_FEATURE)	+= tc1_interface/
+obj-$(CONFIG_MTK_TC1_FEATURE)	+= tc1_interface/
 
 obj-$(CONFIG_MTK_SWITCH_TX_POWER) += sw_tx_power/
 
@@ -278,7 +274,7 @@ obj-$(CONFIG_MTK_VCOREFS)	+= vcorefs/
 
 obj-$(CONFIG_TRUSTONIC_TEE_SUPPORT) += gud/
 obj-$(CONFIG_TRUSTONIC_TEE_SUPPORT) += secmem/
-obj-$(CONFIG_EVDO_DT_VIA_SUPPORT) += misc_via/
+obj-$(CONFIG_MTK_C2K_SUPPORT) += c2k_ccci/
 obj-$(CONFIG_MTK_SCHED_CMP_POWER_AWARE_CONTROLLER)	+=  pa/
 obj-$(CONFIG_HMP_POWER_AWARE_CONTROLLER)	+=  pa_hmp/
 
@@ -295,5 +291,5 @@ endif           # end of CONFIG_ARCH_MT6735
 endif		# end of CONFIG_ARCH_MT6795
 
 ifneq (,$(filter $(CONFIG_MTK_PLATFORM), "mt6752"))
-obj-y	+= ddr/$(CONFIG_MTK_PLATFORM)/
+obj-y	+= ddr/$(MTK_PLATFORM)/
 endif

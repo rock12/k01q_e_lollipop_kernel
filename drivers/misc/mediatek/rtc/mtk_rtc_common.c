@@ -48,6 +48,8 @@
 #include <linux/platform_device.h>
 #include <linux/delay.h>
 #include <linux/pm_wakeup.h>
+#include <linux/sched.h>
+#include <asm/div64.h>
 
 
 /* #include <mach/mt6577_boot.h> */
@@ -67,7 +69,6 @@
 /* #include <linux/printk.h> */
 
 #define RTC_NAME	"mt-rtc"
-#define XLOG_MYTAG	"Power/RTC"
 #define RTC_RELPWR_WHEN_XRST	1	/* BBPU = 0 when xreset_rstb goes low */
 
 
@@ -79,6 +80,13 @@
 #define RTC_MIN_YEAR_OFFSET	(RTC_MIN_YEAR - 1900)
 #define AUTOBOOT_ON 1
 #define AUTOBOOT_OFF 0
+
+
+#ifdef PMIC_REGISTER_INTERRUPT_ENABLE
+extern void pmic_register_interrupt_callback(kal_uint32 intNo,void (EINT_FUNC_PTR)(void));
+extern void pmic_enable_interrupt(kal_uint32 intNo,kal_uint32 en,char *str);
+#endif
+
 /*
  * RTC_PDN1:
  *     bit 0 - 3  : Android bits
@@ -141,9 +149,9 @@
  * RTC_NEW_SPARE3: RTC_AL_MTH bit8~15
  *	   bit 8 ~ 15 : reserved bits
  */
-#if 1
+
 #define rtc_xinfo(fmt, args...)		\
-	pr_debug(fmt, ##args)
+	pr_notice(fmt, ##args)
 
 #define rtc_xerror(fmt, args...)	\
 	pr_err(fmt, ##args)
@@ -151,16 +159,6 @@
 #define rtc_xfatal(fmt, args...)	\
 	pr_emerg(fmt, ##args)
 
-#else
-#define rtc_xinfo(fmt, args...)		\
-	xlog_printk(ANDROID_LOG_INFO, XLOG_MYTAG, fmt, ##args)
-
-#define rtc_xerror(fmt, args...)	\
-	xlog_printk(ANDROID_LOG_ERROR, XLOG_MYTAG, fmt, ##args)
-
-#define rtc_xfatal(fmt, args...)	\
-	xlog_printk(ANDROID_LOG_FATAL, XLOG_MYTAG, fmt, ##args)
-#endif
 static struct rtc_device *rtc;
 static DEFINE_SPINLOCK(rtc_lock);
 
@@ -614,7 +612,7 @@ static int rtc_ops_set_alarm(struct device *dev, struct rtc_wkalrm *alm)
 	}
 
 	/* disable alarm and clear Power-On Alarm bit */
-	hal_rtc_clear_alarm();
+	hal_rtc_clear_alarm(tm);
 
 	if (alm->enabled) {
 		hal_rtc_set_alarm_time(tm);
@@ -623,6 +621,30 @@ static int rtc_ops_set_alarm(struct device *dev, struct rtc_wkalrm *alm)
 
 	return 0;
 }
+
+void rtc_pwm_enable_check(void)
+{
+#ifdef VRTC_PWM_ENABLE
+	U64 time;
+
+	rtc_xinfo("rtc_pwm_enable_check()\n");
+
+	time = sched_clock();
+	do_div(time, 1000000000);
+
+
+	if(time > RTC_PWM_ENABLE_POLLING_TIMER)
+	{
+		hal_rtc_pwm_enable();
+	}
+	else
+	{
+		rtc_xinfo("time=%lld, less than %d, don't enable rtc pwm\n",time,RTC_PWM_ENABLE_POLLING_TIMER);
+	}
+
+#endif
+}
+
 
 static int rtc_ops_ioctl(struct device *dev, unsigned int cmd, unsigned long arg)
 {
@@ -670,6 +692,11 @@ static int rtc_pdrv_probe(struct platform_device *pdev)
 		rtc_xerror("register rtc device failed (%ld)\n", PTR_ERR(rtc));
 		return PTR_ERR(rtc);
 	}
+
+	#ifdef PMIC_REGISTER_INTERRUPT_ENABLE
+		pmic_register_interrupt_callback(RTC_INTERRUPT_NUM,rtc_irq_handler);	
+		pmic_enable_interrupt(RTC_INTERRUPT_NUM,1,"RTC");
+	#endif
 
 	device_init_wakeup(&pdev->dev, 1);
 	return 0;

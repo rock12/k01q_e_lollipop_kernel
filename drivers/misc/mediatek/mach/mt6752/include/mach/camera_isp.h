@@ -571,7 +571,7 @@ typedef struct  {
     unsigned int           count;
     unsigned int           sof_cnt;         //cnt for current sof
     unsigned int           img_cnt;         //cnt for mapping to which sof
-    //rome support only deque 1 image at a time
+    //support only deque 1 image at a time
     //ISP_RT_BUF_INFO_STRUCT  data[ISP_RT_BUF_SIZE];
     ISP_RT_BUF_INFO_STRUCT  data[P1_DEQUE_CNT];
 }ISP_DEQUE_BUF_INFO_STRUCT;

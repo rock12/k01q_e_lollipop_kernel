@@ -150,4 +150,11 @@ obj-y += mt_dcm.o
 obj-$(CONFIG_HIBERNATION)  += hibernate64.o
 
 endif
+ifneq ($(wildcard $(srctree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)/cam_cal),)
+obj-$(CONFIG_MTK_CAM_CAL)   +=  $(ARCH_MTK_PROJECT)/cam_cal/
+endif
+
+ifneq ($(wildcard $(srctree)/drivers/misc/mediatek/mach/$(MTK_PLATFORM)/$(ARCH_MTK_PROJECT)/imgsensor),)
+obj-y   +=  $(ARCH_MTK_PROJECT)/imgsensor/
+endif
 
